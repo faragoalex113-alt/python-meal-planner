@@ -20,6 +20,7 @@ def recommend_lunch_menus(
     allow_drink: bool = True,
     allow_sauce: bool = True,
     seed: Optional[int] = None,
+    high_protein: bool = False,
 ) -> List[Menu]:
     if seed is not None:
         random.seed(seed)
@@ -70,21 +71,56 @@ def recommend_lunch_menus(
     if not valid:
         return []
 
-    random.shuffle(valid)
+    # Rendezés
+    if high_protein:
+        valid.sort(
+            key=lambda m: (m.total_protein(), -m.total_kcal()),
+            reverse=True
+        )
+    else:
+        random.shuffle(valid)
 
     picked: List[Menu] = []
-    seen = set()
+    seen_combos = set()
+    seen_mains = set()
+
+    # 1. kör: high protein módban próbáljunk változatos főételeket adni
     for m in valid:
-        key = (
+        combo_key = (
             m.main["id"],
             m.side["id"] if m.side else None,
             m.drink["id"] if m.drink else None,
             m.sauce["id"] if m.sauce else None,
         )
-        if key in seen:
+
+        if combo_key in seen_combos:
             continue
-        seen.add(key)
+
+        if high_protein and m.main["id"] in seen_mains:
+            continue
+
+        seen_combos.add(combo_key)
+        seen_mains.add(m.main["id"])
         picked.append(m)
+
+        if len(picked) >= n:
+            return picked
+
+    # 2. kör: ha még nincs elég, engedjünk ismétlődő főételt is
+    for m in valid:
+        combo_key = (
+            m.main["id"],
+            m.side["id"] if m.side else None,
+            m.drink["id"] if m.drink else None,
+            m.sauce["id"] if m.sauce else None,
+        )
+
+        if combo_key in seen_combos:
+            continue
+
+        seen_combos.add(combo_key)
+        picked.append(m)
+
         if len(picked) >= n:
             break
 

@@ -141,6 +141,7 @@ def modify_menu_loop(db: FoodDB, menu: Menu, show_macros: bool) -> Menu:
 def main():
     print("=== Menü Planner (PDF -> DB) MVP ===")
     show_macros = yes_no("Mutassam a makrókat is a menüknél?", default=False)
+    high_protein_mode = yes_no("High protein módot szeretnél?", default=False)
 
     daily = ask_int("Napi keret kcal (pl. 1850): ")
     breakfast = ask_int("Reggeli elfogyasztva (Enter = nincs megadva): ", allow_empty=True)
@@ -162,8 +163,16 @@ def main():
     db = FoodDB(DB_PATH)
 
     # Program ajánl 5 menüt
-    menus = recommend_lunch_menus(db, plan.lunch_range, n=5)
-    print("\n=== EBÉD AJÁNLATOK ===")
+    menus = recommend_lunch_menus(
+        db,
+        plan.lunch_range,
+        n=5,
+        high_protein=high_protein_mode
+    )
+    if high_protein_mode:
+        print("\n=== HIGH PROTEIN EBÉD AJÁNLATOK ===")
+    else:
+        print("\n=== EBÉD AJÁNLATOK ===")
     if not menus:
         print("Nincs találat ebbe a tartományba. Próbáld meg más kerettel / basic módban.")
     else:
