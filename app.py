@@ -8,7 +8,7 @@ from db import FoodDB
 from recommender import recommend_lunch_menus
 from models import Menu
 
-DB_PATH = "foods_from_csv.db"
+DB_PATH = "data/foods_from_csv.db"
 
 
 def ask_int(prompt: str, allow_empty: bool = False) -> Optional[int]:
